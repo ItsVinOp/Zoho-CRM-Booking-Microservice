@@ -38,7 +38,23 @@ It replicates the functionality of a Zoho Deluge script using Python, supporting
 POST /create_booking
 Content-Type: application/json
 
-{"Booking_Id":"674d5023accf7","Full_Name":"Alex","Email":"alex@wavcabs.com.au","Phone":"+61481700500","Pickup_Location_Name":"109 Pitt St, 109 Pitt St, Sydney NSW 2000, Australia","Drop_Location_Name":"Domestic Terminal 2, Domestic Terminal 2, Keith Smith Ave, Mascot NSW 2020, Australia","Cab_Type":"Station Wagon","Amount":"113.92","Booking_Date":"2024-12-02","Booking_Time":"17:13","Booking_Type":"current","Price_Type":"estimated","Trip_way":"One Way","Bags":"1","Payment_Type":"cash"}
+{
+"Booking_Id":"674d5023accf7",
+"Full_Name":"Alex",
+"Email":"alex@wavcabs.com.au",
+"Phone":"+61481700500",
+"Pickup_Location_Name":"109PittSt,109PittSt,SydneyNSW2000,Australia",
+"Drop_Location_Name":"DomesticTerminal2,DomesticTerminal2,KeithSmithAve,MascotNSW2020,Australia",
+"Cab_Type":"StationWagon",
+"Amount":"113.92",
+"Booking_Date":"2024-12-02",
+"Booking_Time":"17:13",
+"Booking_Type":"current",
+"Price_Type":"estimated",
+"Trip_way":"OneWay",
+"Bags":"1",
+"Payment_Type":"cash"
+}
 
 --------------------------------------------------
 📦 Environment Notes
