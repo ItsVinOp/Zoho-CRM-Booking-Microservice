@@ -39,21 +39,21 @@ POST /create_booking
 Content-Type: application/json
 
 {
-  "Pickup_Location": "Trip",
-  "Dropoff_Location": "XYZ",
-  "Booking_Type": "Advance Booking",
-  "Pickup_Date_Time": "2025-05-06T02:04:00",
-  "Trip_Way": "One Way",
-  "Select_Bags": "2",
-  "Fixed_Price": "true",
-  "Taxi_Type": "Sedan",
-  "Passengers": "4",
-  "Fare": 388,
-  "Full_Name": "Test Abomi",
-  "Email": "test6217@gmail.com",
-  "Phone": "9326097642",
-  "Notes": "Test Notes",
-  "Payment_Method": "Cash"
+"Booking_Id":"674d5023accf7",
+"Full_Name":"Alex",
+"Email":"alex@wavcabs.com.au",
+"Phone":"+61481700500",
+"Pickup_Location_Name":"109PittSt,109PittSt,SydneyNSW2000,Australia",
+"Drop_Location_Name":"DomesticTerminal2,DomesticTerminal2,KeithSmithAve,MascotNSW2020,Australia",
+"Cab_Type":"StationWagon",
+"Amount":"113.92",
+"Booking_Date":"2024-12-02",
+"Booking_Time":"17:13",
+"Booking_Type":"current",
+"Price_Type":"estimated",
+"Trip_way":"OneWay",
+"Bags":"1",
+"Payment_Type":"cash"
 }
 
 --------------------------------------------------
