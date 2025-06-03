@@ -153,7 +153,8 @@ def create_booking():
 # Add CORS headers to all JSON responses
 def cors_jsonify(data):
     response = make_response(jsonify(data))
-    response.headers.add("Access-Control-Allow-Origin", "*")
+    response.headers.add("Access-Control-Allow-Origin", "http://localhost:4003")
+    response.headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
     return response
 
 if __name__ == '__main__':
