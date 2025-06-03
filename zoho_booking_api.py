@@ -1,9 +1,10 @@
 from flask import Flask, request, jsonify, make_response
 import requests
+from flask_cors import CORS
 from datetime import datetime
 
 app = Flask(__name__)
-
+CORS(app)
 ZOHO_TOKEN_URL = "https://accounts.zoho.com.au/oauth/v2/token"
 ZOHO_API_BASE_URL = "https://www.zohoapis.com.au/crm/v8"
 
@@ -153,8 +154,6 @@ def create_booking():
 # Add CORS headers to all JSON responses
 def cors_jsonify(data):
     response = make_response(jsonify(data))
-    response.headers.add("Access-Control-Allow-Origin", "http://localhost:4003/")
-    response.headers.add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
     return response
 
 if __name__ == '__main__':
