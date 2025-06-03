@@ -68,7 +68,6 @@ def create_booking():
         return cors_jsonify({"message": error, "status": "error"}), 500
 
     headers = {
-        "Access-Control-Allow-Origin", "http://localhost:4003/",
         "Authorization": f"Zoho-oauthtoken {token}",
         "Content-Type": "application/json"
     }
