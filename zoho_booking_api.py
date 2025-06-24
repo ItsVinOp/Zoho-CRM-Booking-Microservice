@@ -2,16 +2,19 @@ from flask import Flask, request, jsonify, make_response
 import requests
 from flask_cors import CORS
 from datetime import datetime
+from zoneinfo import ZoneInfo  # Python 3.9+
 
 app = Flask(__name__)
 CORS(app)
+
+# Zoho config
 ZOHO_TOKEN_URL = "https://accounts.zoho.com.au/oauth/v2/token"
 ZOHO_API_BASE_URL = "https://www.zohoapis.com.au/crm/v8"
-
-# Your OAuth credentials
 REFRESH_TOKEN = "1000.4bf056fc819013cfd797c0b0c168a856.b2fc08eea4f2c0466d43d59201ec392e"
 CLIENT_ID = "1000.BK8S3UZUKASY6S3C44BLG0OZ7ZUCNK"
 CLIENT_SECRET = "a18f56ea0fbcb1327220c3039f48bcbd784c0bb79e"
+
+AEST = ZoneInfo("Australia/Sydney")
 
 def get_access_token():
     payload = {
@@ -60,10 +63,7 @@ def create_contact(headers, data):
 
 @app.route('/create_booking', methods=['POST'])
 def create_booking():
-    # Convert all input keys to lowercase
     maps = {k.lower(): v for k, v in request.json.items()}
-
-    # Step 1: Get access token
     token, error = get_access_token()
     if not token:
         return cors_jsonify({"message": error, "status": "error"}), 500
@@ -73,11 +73,9 @@ def create_booking():
         "Content-Type": "application/json"
     }
 
-    # Step 2: Normalize phone
     phone_raw = maps.get('phone', '')
     phone_search_val = ''.join(filter(str.isdigit, phone_raw))
 
-    # Step 3: Search or create contact
     contact_id = search_contact(headers, phone=phone_search_val, email=maps.get('email'))
     if not contact_id:
         contact_id = create_contact(headers, maps)
@@ -95,20 +93,18 @@ def create_booking():
     booking_type = maps.get("booking_type", "").strip().lower()
     price_type = maps.get("price_type", "").strip().lower()
 
-    if booking_type == "advance":
-        booking_date = maps.get("booking_date", "")
-        booking_time = maps.get("booking_time", "00:00")
-        try:
-            trip_datetime = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
-            trip_date_time_str = trip_datetime.strftime("%Y-%m-%dT%H:%M:%S")
-            closing_date_str = booking_date
-        except Exception:
-            now = datetime.now()
-            trip_date_time_str = now.strftime("%Y-%m-%dT%H:%M:%S")
-            closing_date_str = now.strftime("%Y-%m-%d")
-    else:
-        now = datetime.now()
-        trip_date_time_str = now.strftime("%Y-%m-%dT%H:%M:%S")
+    # Trip DateTime Formatting for Australia/Sydney
+    booking_date = maps.get("booking_date", "")
+    booking_time = maps.get("booking_time", "00:00")
+
+    try:
+        trip_datetime = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
+        trip_datetime = trip_datetime.replace(tzinfo=AEST)
+        trip_date_time_str = trip_datetime.isoformat(timespec='seconds')  # includes +10:00
+        closing_date_str = booking_date
+    except Exception:
+        now = datetime.now(AEST)
+        trip_date_time_str = now.isoformat(timespec='seconds')
         closing_date_str = now.strftime("%Y-%m-%d")
 
     deal_data = {
@@ -151,7 +147,6 @@ def create_booking():
 
     return cors_jsonify({"message": "Booking created", "deal_id": deal_id, "status": "success"}), 200
 
-# Add CORS headers to all JSON responses
 def cors_jsonify(data):
     response = make_response(jsonify(data))
     return response
