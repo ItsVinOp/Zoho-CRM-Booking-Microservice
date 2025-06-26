@@ -2,19 +2,18 @@ from flask import Flask, request, jsonify, make_response
 import requests
 from flask_cors import CORS
 from datetime import datetime
-from zoneinfo import ZoneInfo  # Python 3.9+
+import pytz
 
 app = Flask(__name__)
 CORS(app)
 
-# Zoho config
+# Zoho OAuth config
 ZOHO_TOKEN_URL = "https://accounts.zoho.com.au/oauth/v2/token"
 ZOHO_API_BASE_URL = "https://www.zohoapis.com.au/crm/v8"
+
 REFRESH_TOKEN = "1000.4bf056fc819013cfd797c0b0c168a856.b2fc08eea4f2c0466d43d59201ec392e"
 CLIENT_ID = "1000.BK8S3UZUKASY6S3C44BLG0OZ7ZUCNK"
 CLIENT_SECRET = "a18f56ea0fbcb1327220c3039f48bcbd784c0bb79e"
-
-AEST = ZoneInfo("Australia/Sydney")
 
 def get_access_token():
     payload = {
@@ -64,6 +63,7 @@ def create_contact(headers, data):
 @app.route('/create_booking', methods=['POST'])
 def create_booking():
     maps = {k.lower(): v for k, v in request.json.items()}
+
     token, error = get_access_token()
     if not token:
         return cors_jsonify({"message": error, "status": "error"}), 500
@@ -93,19 +93,26 @@ def create_booking():
     booking_type = maps.get("booking_type", "").strip().lower()
     price_type = maps.get("price_type", "").strip().lower()
 
-    # Trip DateTime Formatting for Australia/Sydney
-    booking_date = maps.get("booking_date", "")
-    booking_time = maps.get("booking_time", "00:00")
-
+    # Process trip date and time in Australia/Sydney timezone
     try:
-        trip_datetime = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
-        trip_datetime = trip_datetime.replace(tzinfo=AEST)
-        trip_date_time_str = trip_datetime.isoformat(timespec='seconds')  # includes +10:00
-        closing_date_str = booking_date
+        booking_date = maps.get("booking_date", "")
+        booking_time = maps.get("booking_time", "00:00")
+        local_dt = datetime.strptime(f"{booking_date} {booking_time}", "%Y-%m-%d %H:%M")
+        syd_tz = pytz.timezone("Australia/Sydney")
+        local_dt = syd_tz.localize(local_dt)
     except Exception:
-        now = datetime.now(AEST)
-        trip_date_time_str = now.isoformat(timespec='seconds')
-        closing_date_str = now.strftime("%Y-%m-%d")
+        local_dt = pytz.timezone("Australia/Sydney").localize(datetime.now())
+
+    trip_date_time_str = local_dt.strftime("%Y-%m-%dT%H:%M:%S")
+    closing_date_str = local_dt.strftime("%Y-%m-%d")
+
+    # Format bags as 0, 01, 02...22 (Zoho dropdown)
+    bags_input = maps.get("bags", "0")
+    try:
+        int_bags = int(bags_input)
+        bags_value = str(int_bags).rjust(2, "0") if int_bags > 0 else "0"
+    except (ValueError, TypeError):
+        bags_value = "0"
 
     deal_data = {
         "Deal_Name": deal_name,
@@ -113,7 +120,7 @@ def create_booking():
         "Pickup_Address": pickup,
         "Destination_Address": drop,
         "Trip_Type": maps.get("trip_way", ""),
-        "Bags": maps.get("bags", 0),
+        "Bags": bags_value,
         "Taxi_Type": maps.get("cab_type", ""),
         "Contact_Name": contact_id,
         "Payment_Method": (maps.get("payment_type") or "").capitalize(),
