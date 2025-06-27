@@ -93,7 +93,7 @@ def create_booking():
     booking_type = maps.get("booking_type", "").strip().lower()
     price_type = maps.get("price_type", "").strip().lower()
 
-    # Process trip date and time in Australia/Sydney timezone
+    # Parse booking date/time in Australia/Sydney timezone
     try:
         booking_date = maps.get("booking_date", "")
         booking_time = maps.get("booking_time", "00:00")
@@ -106,13 +106,19 @@ def create_booking():
     trip_date_time_str = local_dt.strftime("%Y-%m-%dT%H:%M:%S")
     closing_date_str = local_dt.strftime("%Y-%m-%d")
 
-    # Format bags as 0, 01, 02...22 (Zoho dropdown)
+    # Format bags: 0, 01, 02... for dropdown
     bags_input = maps.get("bags", "0")
     try:
         int_bags = int(bags_input)
         bags_value = str(int_bags).rjust(2, "0") if int_bags > 0 else "0"
     except (ValueError, TypeError):
         bags_value = "0"
+
+    # Ensure amount is float and safe
+    try:
+        amount = float(maps.get("payment_amount", 0))
+    except (ValueError, TypeError):
+        amount = 0
 
     deal_data = {
         "Deal_Name": deal_name,
@@ -125,7 +131,7 @@ def create_booking():
         "Contact_Name": contact_id,
         "Payment_Method": (maps.get("payment_type") or "").capitalize(),
         "Fleet": "13MAXI CABS",
-        "Amount": maps.get("amount", 0),
+        "Amount": amount,
         "Trip_Sources": "13maxicabs.com",
         "Service_Type": "General Transfers",
         "Stage": "Booking Enquiry",
